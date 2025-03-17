@@ -3,8 +3,7 @@ import random
 pygame.init()
 scrin=pygame.display.set_mode((1000, 600))
 fps=pygame.time.Clock()
-rect_x1=4
-rect_y1=260
+rect_x1=4 
 speed_y1=4
 rect_W1=10
 rect_H1=100
