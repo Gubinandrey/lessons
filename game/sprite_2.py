@@ -114,7 +114,7 @@ class Player:
 
 npss=[]
 enemy=Player(0, 0)
-mapic=map.Tile_map(scrin)
+mapic=map.Tile_map(scrin, 1)
 mapic.loading()
 for asd in mapic.get_nps():
     p=Player(asd[0], asd[1])

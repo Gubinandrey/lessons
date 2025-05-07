@@ -107,7 +107,7 @@ class Editor:
         for dirname in os.listdir(dirpath):
             if not os.path.isdir(os.path.join(dirpath, dirname)): continue
             self.resources[dirname] = utils.load_images(os.path.join(dirpath, dirname), self.tile_size / self.base_tile_size, (0, 0, 0))
-
+        self.resources['зелья']=utils.load_images(os.path.join(dirpath, 'зелья'), 0.4, (0, 0, 0))
     def _load_resources(self):
         self.resources = {}
         self.resource_props = {}
@@ -458,7 +458,7 @@ class Editor:
             if name == 'resource': return 'type'
             if name == 'variant': return 'index'
             return name
-        path = os.path.join(MAP_DIR, 'map.json')
+        path = os.path.join(MAP_DIR, 'map2.json')
         for tile in self.tile_map.values():
             tile['type'] = tile['resource']
             tile['index'] = tile['variant']
@@ -480,7 +480,7 @@ class Editor:
             )
 
     def load(self):
-        path = os.path.join(MAP_DIR, 'map.json')
+        path = os.path.join(MAP_DIR, 'map2.json')
         try:
             with open(path, 'r') as f:
                 data = json.load(f)

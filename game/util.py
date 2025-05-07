@@ -4,13 +4,15 @@ import os
 
 
 
-def load(file_name, scale):
+def load(file_name, scale, do_calarki=True):
     img=pygame.image.load(file_name).convert_alpha()
     w=img.get_width()
     h=img.get_height()
     new_img=pygame.transform.scale(img, (w*scale, h*scale)).convert_alpha()
-    new_img.set_colorkey((0, 0, 0))
+    if do_calarki==True:
+        new_img.set_colorkey((0, 0, 0))
     return new_img 
+
 
 
 
