@@ -1,6 +1,7 @@
 import pygame
 pygame.init() 
 import util
+import time
 import animation
 import map
 import random
@@ -9,8 +10,8 @@ import coin
 import главное_меню
 
 pygame.mixer.init()
-W =2050
-H =1050
+W =1000
+H =800
 level=0
 scrin=pygame.display.set_mode((W, H), (pygame.SRCALPHA ))
 
@@ -30,7 +31,7 @@ shrink=0
 scrin_2=pygame.Surface((W, H), pygame.SRCALPHA)
 expand=0
 local={
-'zelia_double_jump':False
+'zelia_double_jump':True
 
 }
 all={
@@ -44,6 +45,7 @@ class Player:
     def __init__(self, x, y, enemy):
         self.x=x
         self.y=y
+        self.change_gun_timer=240
         self.my_coins=0
         self.pula_timer=30
         self.fire_timer=30
@@ -186,6 +188,17 @@ class Player:
         self.animationsss[self.current].update()
         
     def ii(self):
+        self.change_gun_timer-=1
+        self.change_gun=random.randint(1, 250)
+        
+        if self.change_gun==3 and self.change_gun_timer<0:
+            
+            
+            if self.now_оружка==self.оружки[0]:
+                self.now_оружка=self.оружки[1]
+            elif self.now_оружка==self.оружки[1]:
+                self.now_оружка=self.оружки[0]
+
         if self.current=='idle':
             x=random.randint(0, 101)
             if x==1:
@@ -271,7 +284,7 @@ class Player:
         pula_music.play()
         if self.flip==True:
             if self.оружки[0]==self.now_оружка:
-                puler=Pula(self.rect().left-50, self.rect().centery, -30)
+                puler=Pula(self.rect().left-50, self.rect().centery, -30, 50)
                 if self==player:
                     self.many_pules+=1
                 if self.many_pules>=3:
@@ -279,7 +292,7 @@ class Player:
                 projectiles.append(puler) 
         else:
             if self.оружки[0]==self.now_оружка:
-                puler=Pula(self.rect().right+20, self.rect().centery, 30)
+                puler=Pula(self.rect().right+20, self.rect().centery, 30, 50)
                 if self==player:
                     self.many_pules+=1
                 if self.many_pules>=3:
@@ -294,7 +307,7 @@ class Player:
                     self.pula_timer=20
                     self.pula_timer-=1
                 for asd in range(3):
-                    puler=Pula(self.rect().left-70, self.y_p, -30)
+                    puler=Pula(self.rect().left-70, self.y_p, -30, 30)
                     self.y_p+=40
                     projectiles.append(puler)
         if self.flip==False:
@@ -305,7 +318,7 @@ class Player:
                     self.pula_timer-=1
             if self.оружки[1]==self.now_оружка:
                 for asd in range(3):
-                    puler=Pula(self.rect().right+70, self.y_p, 30)
+                    puler=Pula(self.rect().right+70, self.y_p, 30, 30)
                     self.y_p+=40
                     projectiles.append(puler)
 
@@ -328,15 +341,15 @@ class Player:
 
 
 class Pula:
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y, speed, max_live_time):
         self.x=x
         self.y=y          
         self.speed=speed
         self.live_time=0
-        
+        self.max_live_time=max_live_time
     def update(self):
         self.live_time+=1
-        if self.live_time==50:
+        if self.live_time==self.max_live_time:
             projectiles.remove(self)
         self.x+=self.speed
         
@@ -423,7 +436,14 @@ for asd in mapic.get_nps():
     npss.append(p)
     
 def start():
+    start_time=time.time()
+    q=0
     while True:
+        q+=1
+        if time.time()-start_time>1:
+            pygame.display.set_caption(str(q/(time.time()-start_time)))
+            start_time=time.time()
+            q=0
         fps.tick(80)
         scrin.fill((102, 255, 255))
         if player.pula_timer>0:
@@ -513,4 +533,5 @@ def start():
             expand-=20
             scrin.blit(scrin_2, (0, 0))
         pygame.display.update()
-main_menu.run(scrin, fps, next_lexel, start, main_menu.run)
+start()
+#main_menu.run(scrin, fps, next_lexel, start, main_menu.run)
