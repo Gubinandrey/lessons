@@ -1,7 +1,12 @@
 import pygame
 import util
 import json
-BASE_DIR =  '/Users/andrey/python/lessons/game'
+import platform
+
+if platform.system() == 'Darwin':
+    BASE_DIR =  '/Users/andrey/python/lessons/game'
+else:
+    BASE_DIR = 'game'
 
 class Tile_map:
     def __init__(self, scrin, level):
@@ -52,7 +57,7 @@ class Tile_map:
         pass
     def loading(self):
         try:
-            f=open('map'+str(self.now_level)+'.json', 'r')
+            f=open(f'{BASE_DIR}/map'+str(self.now_level)+'.json', 'r')
             settings=json.load(f)
             self.tile_map=settings['tile_map']
             self.tile_size=settings['tile_size']
@@ -60,7 +65,7 @@ class Tile_map:
             self.camera_y=settings['camera_y']
             self.off_grid_tile=settings['off_grid']
             self.k = self.tile_size // 16
-            self.portal_load=util.load('/Users/andrey/python/lessons/game/images/tiles/Порталоткройся/314251053108211 (4).png', self.k+2)
+            self.portal_load=util.load(f'{BASE_DIR}/images/tiles/Порталоткройся/314251053108211 (4).png', self.k+2)
 
             for tile in self.tile_map.values():
                 if tile['type'] == 'spawners':
@@ -87,7 +92,7 @@ class Tile_map:
         self.tx=x//self.tile_size
         self.ty=y//self.tile_size
         self.key=str((self.tx, self.ty))
-        if self.key not in self.tile_map:
+        if self.key not in self.tile_map or not self.tile_map[self.key].get('solid', True):
             return False
         else:
             self.tile=self.tile_map[self.key]
@@ -121,7 +126,7 @@ class Tile_map:
                 rect = pygame.Rect(i * self.tile_size, j * self.tile_size, self.tile_size, self.tile_size)
                 if str((i, j)) in self.tile_map:
                     tile = self.tile_map[str((i, j))]
-                    if tile['type'] in ['grass', 'stone'] and rect.colliderect(player_bbx):
+                    if tile.get('solid', True) and tile['type'] in ['grass', 'stone'] and rect.colliderect(player_bbx):
                         self.tiles_intersections.append(rect)
         return self.tiles_intersections
         # for asd in self.tile_map:

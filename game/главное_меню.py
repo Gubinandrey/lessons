@@ -1,16 +1,21 @@
 import pygame
 import random
 import time
-pygame.init()
+import platform
 import util
+pygame.init()
 
+if platform.system() == 'Darwin':
+    BASE_DIR =  '/Users/andrey/python/lessons/game'
+else:
+    BASE_DIR = 'game'
 
 class Main_menu:
     def __init__(self):
-        self.bg=util.load('/Users/andrey/python/lessons/game/images/icons_menu/background.jpg', 0.8)
+        self.bg=util.load(f'{BASE_DIR}/images/icons_menu/background.jpg', 0.8)
         self.bg.set_colorkey((255, 255, 255))
         self.shift=0
-        self.play_button=Button(0.35, 750, 425, '/Users/andrey/python/lessons/game/images/icons_menu/play_button-no-bg-preview (carve.photos).png')
+        self.play_button=Button(0.35, 750, 425, f'{BASE_DIR}/images/icons_menu/play_button-no-bg-preview (carve.photos).png')
         self.select_menu=Level_sekect_menu()
     def run(self, scrin, fps, next_level, start, run ):
         pygame.event.clear()
@@ -51,7 +56,7 @@ class Button:
 
 class Level_sekect_menu:
     def __init__(self):
-        self.bg=util.load('/Users/andrey/python/lessons/game/images/icons_menu/background_select_level.jpg', 1.1)
+        self.bg=util.load(f'{BASE_DIR}/images/icons_menu/background_select_level.jpg', 1.1)
         self.bg.set_colorkey((255, 255, 255))
         self.shift=0
         
@@ -174,11 +179,11 @@ class Level_sekect_menu:
 
 class Start_menu_map:
     def __init__(self ):
-        self.background_LeVel_menu=util.load('/Users/andrey/python/lessons/game/images/icons_menu/start_LeVel_menu.jpg', 1.3)
-        self.play_button_start_menu_map=Button(0.75, 1350, 425, '/Users/andrey/python/lessons/game/images/icons_menu/play_button_start_menu1.png') 
+        self.background_LeVel_menu=util.load(f'{BASE_DIR}/images/icons_menu/start_LeVel_menu.jpg', 1.3)
+        self.play_button_start_menu_map=Button(0.75, 1350, 425, f'{BASE_DIR}/images/icons_menu/play_button_start_menu1.png') 
         self.play_button_start_menu_map_bbx=self.play_button_start_menu_map.bbx_button
-        self.home_button=Button(0.24, 1370, 600, '/Users/andrey/python/lessons/game/images/icons_menu/home_button_to_play.png')
-        self.back_button_in_Start_menu_map_menu=Button(0.498, 1360, 280, '/Users/andrey/python/lessons/game/images/icons_menu/back_button_in_Start_menu_map_menu.png')
+        self.home_button=Button(0.24, 1370, 600, f'{BASE_DIR}/images/icons_menu/home_button_to_play.png')
+        self.back_button_in_Start_menu_map_menu=Button(0.498, 1360, 280, f'{BASE_DIR}/images/icons_menu/back_button_in_Start_menu_map_menu.png')
     def render(self, scrin):
         scrin.blit(self.background_LeVel_menu, (508.85, 200))
         

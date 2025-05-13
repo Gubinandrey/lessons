@@ -5,24 +5,32 @@ import time
 import animation
 import map
 import random
+import platform
 import math
 import coin
 import главное_меню
 
 pygame.mixer.init()
-W =1000
-H =800
-level=0
-scrin=pygame.display.set_mode((W, H), (pygame.SRCALPHA ))
+
+if platform.system()=='Darwin':
+    W =1000
+    H =800
+    BASE_DIR = '/Users/andrey/python/lessons/game'
+else:
+    W, H = 800, 600
+    BASE_DIR = 'game'
+
+level=1
+scrin=pygame.display.set_mode((W, H))
 
 mapic=map.Tile_map(scrin, 1)
-pula_music=pygame.mixer.Sound('/Users/andrey/python/lessons/game/sfx/выстрел.mp3')
+pula_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/выстрел.mp3')
 pula_music.set_volume(0.3)
-jump_music=pygame.mixer.Sound('/Users/andrey/python/lessons/game/sfx/jump.wav')
-hit_music=pygame.mixer.Sound('/Users/andrey/python/lessons/game/sfx/hit.wav')
+jump_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/jump.wav')
+hit_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/hit.wav')
 font=pygame.font.SysFont('Ura Bum Bum SP', 120)
 fps=pygame.time.Clock()
-projectile=util.load('/Users/andrey/python/lessons/game/images/projectile.png', mapic.k-0.2)
+projectile=util.load(f'{BASE_DIR}/images/projectile.png', mapic.k-0.2)
 gravition=.5
 sparksssss=[]
 projectiles=[]
@@ -51,9 +59,9 @@ class Player:
         self.fire_timer=30
         self.xp=100
         self.many_pules=0
-        self.дробовик_3000=util.load('/Users/andrey/python/lessons/game/images/дробовик_для_игры_обрезанный_3000.png', mapic.k/20, False)
+        self.дробовик_3000=util.load(f'{BASE_DIR}/images/дробовик_для_игры_обрезанный_3000.png', mapic.k/20, False)
         self.дробовик_3000_bbx=self.дробовик_3000.get_rect()
-        self.gun=util.load('/Users/andrey/python/lessons/game/images/gun.png', mapic.k+1)
+        self.gun=util.load(f'{BASE_DIR}/images/gun.png', mapic.k+1)
         self.оружки=self.gun, self.дробовик_3000
         self.now_оружка=self.оружки[0]
         
@@ -440,8 +448,9 @@ def start():
     q=0
     while True:
         q+=1
-        if time.time()-start_time>1:
-            pygame.display.set_caption(str(q/(time.time()-start_time)))
+        end_time = time.time()
+        if end_time-start_time>=1:
+            pygame.display.set_caption(str(q/(end_time-start_time)))
             start_time=time.time()
             q=0
         fps.tick(80)

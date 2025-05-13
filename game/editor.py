@@ -4,13 +4,20 @@ import sys
 import json
 from collections import deque
 import copy
+import platform
+
 from scripts import utils
+
+LEVEL = 1
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     os.chdir(script_dir)
 
-    RESOURCES_DIR = '/Users/andrey/python/lessons/game/images/tiles' # RELATIVE PATH TO THE RESOURCES
+    if platform.system() == 'Darwin':
+        RESOURCES_DIR = '/Users/andrey/python/lessons/game/images/tiles' # RELATIVE PATH TO THE RESOURCES
+    else:
+        RESOURCES_DIR = './images/tiles' 
     MAP_DIR = './' # RELATIVE PATH TO THE DIR WHERE map.json files is placed
 
 
@@ -76,6 +83,9 @@ class Editor:
         # copy
         self.copied_grid_tiles = None
         self.copied_offgrid_tiles = None
+
+        # grid - not solid tiles
+        self.grid_not_solid_mode = False
 
     
     def transform(self):
@@ -220,7 +230,12 @@ class Editor:
                 if (i, j) in self.tile_map:
                     tile = self.tile_map[(i, j)]
                     img = self.resources[tile['resource']][tile['variant']]
+                    need_transparent = self.grid_not_solid_mode and not tile.get('solid', True)
+                    if need_transparent:
+                        img.set_alpha(100)
                     screen.blit(img, (i * self.tile_size - self.camera[0], j * self.tile_size - self.camera[1]))
+                    if need_transparent:
+                        img.set_alpha(255)
         for tile in self.nogrid_tiles:
             if self.moving_selected_area and tile in self.moving_offgrid_tiles: continue
             img = self.resources[tile['resource']][tile['variant']]
@@ -299,11 +314,11 @@ class Editor:
         if not fill_activated:
             i = int((pos[0] + self.camera[0]) // self.tile_size)
             j = int((pos[1] + self.camera[1]) // self.tile_size)
-            self.tile_map[(i, j)] = {'resource': self.current_resource, 'variant': self.current_variant}
+            self.tile_map[(i, j)] = {'resource': self.current_resource, 'variant': self.current_variant, 'solid': not self.grid_not_solid_mode}
             self._add_history('add', (i, j), self.tile_map[(i, j)], 'grid')
         else:
             for i, j in self.last_filled:
-                self.tile_map[(i, j)] = {'resource': self.current_resource, 'variant': self.current_variant}
+                self.tile_map[(i, j)] = {'resource': self.current_resource, 'variant': self.current_variant, 'solid': not self.grid_not_solid_mode}
             tile = {'resource': self.current_resource, 'variant': self.current_variant}
             self._add_history('add_filled', self.last_filled, tile, 'grid')
 
@@ -458,7 +473,7 @@ class Editor:
             if name == 'resource': return 'type'
             if name == 'variant': return 'index'
             return name
-        path = os.path.join(MAP_DIR, 'map2.json')
+        path = os.path.join(MAP_DIR, f'map{LEVEL}.json')
         for tile in self.tile_map.values():
             tile['type'] = tile['resource']
             tile['index'] = tile['variant']
@@ -480,7 +495,7 @@ class Editor:
             )
 
     def load(self):
-        path = os.path.join(MAP_DIR, 'map2.json')
+        path = os.path.join(MAP_DIR, f'map{LEVEL}.json')
         try:
             with open(path, 'r') as f:
                 data = json.load(f)
@@ -706,6 +721,8 @@ if __name__ == "__main__":
                 elif event.key == pygame.K_c:
                     if ctrl_pressed:
                         editor._copy_sector()
+                elif event.key == pygame.K_m:
+                    editor.grid_not_solid_mode = not editor.grid_not_solid_mode
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LSHIFT:
