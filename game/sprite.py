@@ -9,21 +9,21 @@ import platform
 import math
 import coin
 import главное_меню
-
+min_dist=2050
 pygame.mixer.init()
 
 if platform.system()=='Darwin':
-    W =1000
-    H =800
+    W =2050
+    H =1050
     BASE_DIR = '/Users/andrey/python/lessons/game'
 else:
     W, H = 800, 600
     BASE_DIR = 'game'
 
-level=1
+level=3
 scrin=pygame.display.set_mode((W, H))
 
-mapic=map.Tile_map(scrin, 1)
+mapic=map.Tile_map(scrin, 3)
 pula_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/выстрел.mp3')
 pula_music.set_volume(0.3)
 jump_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/jump.wav')
@@ -472,21 +472,25 @@ def start():
         mapic.render()
         mapic.update()
         for asd in coins:
-            asd.render(scrin, mapic)
-            asd.update()
+            if abs(player.x-asd.x)+abs(player.y-asd.y)<min_dist:
+                asd.render(scrin, mapic)
+                asd.update()
         player.update()
         player.render()
         for asd in sparksssss:
+            
             asd.update()
             asd.render()
         for enemy in npss:
-            enemy.render()
-            enemy.ii()
-            enemy.update()
+            if abs(player.x-enemy.x)+abs(player.y-enemy.y)<min_dist:
+                enemy.render()
+                enemy.ii()
+                enemy.update()
         for asd in projectiles:
             asd.update()
         for asd in zelia_double_jump:
-            scrin.blit(mapic.resource['зелья'][0], (asd.x-mapic.camera_x, asd.y-mapic.camera_y))
+            if abs(player.x-asd.x)+abs(player.y-asd.y)<min_dist:
+                scrin.blit(mapic.resource['зелья'][0], (asd.x-mapic.camera_x, asd.y-mapic.camera_y))
         global scrinshake
         mapic.camera_x+=(player.x- W//2+250-mapic.camera_x)/30
         mapic.camera_y+=(player.y-H // 2-mapic.camera_y)/30
