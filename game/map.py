@@ -12,7 +12,6 @@ class Tile_map:
     def __init__(self, scrin, level):
         self.scrin=scrin
         self.camera_x=0
-      
         self.now_level=level
         self.camera_y=0
         self.history=[]
@@ -30,9 +29,11 @@ class Tile_map:
             'nps':util.load_img(f'{BASE_DIR}/images/tiles/spawners', self.k+2),
             'Порталоткройся':util.load_img(f'{BASE_DIR}/images/tiles/Порталоткройся', self.k+2),
             'coins':util.load_img(f'{BASE_DIR}/images/tiles/coins', self.k+2), 
-            'зелья':util.load_img(f'{BASE_DIR}/images/tiles/зелья', 0.4)
+            'зелья':util.load_img(f'{BASE_DIR}/images/tiles/зелья', 0.4),
+            'popytki_plotform':util.load_img(f'{BASE_DIR}/images/tiles/popytki_plotform', 5),
+            
         }
-        self.resource_names=['grass', 'stone', 'large_decor', 'decor','nps', 'Порталоткройся', 'coins', "зелья"]
+        self.resource_names=['grass', 'stone', 'large_decor', 'decor','nps', 'Порталоткройся', 'coins', "зелья", 'popytki_plotform']
         self.curent_resourse_index=0
         self.curent_index=0
         
@@ -162,3 +163,14 @@ class Tile_map:
                 del self.tile_map[p]
                 self.coins.append(c)
         return self.coins
+    def get_move_platforms(self):
+        move_platforms=[]
+        for p in self.tile_map.copy():
+            asd=self.tile_map[p]
+            if asd ['type']=='popytki_plotform':
+                c=tuple(map(int, p[1:-1].split(',')))
+                c=(c[0]*self.tile_size, c[1]*self.tile_size)
+                del self.tile_map[p]
+                move_platforms.append(c)
+                
+        return move_platforms

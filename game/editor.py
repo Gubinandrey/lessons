@@ -8,7 +8,7 @@ import platform
 
 from scripts import utils
 
-LEVEL = 3
+LEVEL = 2
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))

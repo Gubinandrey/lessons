@@ -1,210 +1,171 @@
 import pygame
-import random
-import time
 import platform
-import util
+from scripts import utils as util
+
 pygame.init()
 
-if platform.system() == 'Darwin':
-    BASE_DIR =  '/Users/andrey/python/lessons/game'
-else:
-    BASE_DIR = 'game'
+BASE_DIR = '/Users/andrey/python/lessons/game' if platform.system() == 'Darwin' else 'game'
+
+STATE_MAIN_MENU = 'MAIN_MENU'
+STATE_LEVEL_SELECT = 'LEVEL_SELECT'
+STATE_START_MAP = 'START_MAP'
 
 class Main_menu:
     def __init__(self):
-        self.bg=util.load(f'{BASE_DIR}/images/icons_menu/background.jpg', 0.8)
-        self.bg.set_colorkey((255, 255, 255))
-        self.shift=0
-        self.play_button=Button(0.35, 750, 425, f'{BASE_DIR}/images/icons_menu/play_button-no-bg-preview (carve.photos).png')
-        self.select_menu=Level_sekect_menu()
-    def run(self, scrin, fps, next_level, start, run ):
-        pygame.event.clear()
+        self.state = STATE_MAIN_MENU
+        self.selected_level = None
+        self.level_menu = Level_sekect_menu()
+        self.start_map = Start_menu_map()
+        self.bg_orig = util.load_image(f'{BASE_DIR}/images/icons_menu/background.jpg', 1)
+        self.play_button = Button(0.35, 0.5, 0.5, f'{BASE_DIR}/images/icons_menu/play_button-no-bg-preview (carve.photos).png')
 
+    def run(self, screen, fps, next_level, start, run_fn):
+        clock = fps
         while True:
-            fps.tick(80)
-            scrin.fill((255, 255, 255))
-            
-
-            scrin.blit(self.bg, (self.shift, 0))
-            scrin.blit(self.bg, (self.shift-self.bg.get_width(), 0))
-            self.play_button.update()
-            
-            self.play_button.render(scrin)   
-            for asd in pygame.event.get():
-                if asd.type==pygame.QUIT:
+            clock.tick(80)
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
                     exit(0)
-                if asd.type==pygame.MOUSEBUTTONDOWN and self.play_button.hower==True:
-                    
-                    self.select_menu.run(scrin, fps, next_level, start, run)
-            pygame.display.flip()
-class Button:
-    def __init__(self, scale, x, y, file_path):
-        self.buttons=util.load(file_path, scale)
-        self.bbx_button=pygame.Rect(x, y, self.buttons.get_width(), self.buttons.get_height())
-        self.hower=False
-    def update(self):
-        
-        if self.bbx_button.collidepoint(pygame.mouse.get_pos()):
-            self.hower=True
-            pygame.display.set_caption('wdsnmvbc dmnav mjwa')
+            sw, sh = screen.get_size()
+            screen.fill((255, 255, 255))
 
-            
-        else:
-            self.hower=False
-    def render(self, scrin):
-        scrin.blit(self.buttons, (self.bbx_button.x, self.bbx_button.y))
+            if self.state == STATE_MAIN_MENU:
+                bg = pygame.transform.scale(self.bg_orig, (sw, sh))
+                screen.blit(bg, (0, 0))
+                self.play_button.update(screen)
+                self.play_button.render(screen)
+                if self.play_button.clicked:
+                    self.state = STATE_LEVEL_SELECT
+
+            elif self.state == STATE_LEVEL_SELECT:
+                clicked = self.level_menu.handle(screen, events)
+                if clicked:
+                    self.selected_level = clicked
+                    self.state = STATE_START_MAP
+
+            elif self.state == STATE_START_MAP:
+                result = self.start_map.handle(screen, events, self.selected_level, next_level, start, run_fn)
+                if result in (STATE_MAIN_MENU, STATE_LEVEL_SELECT):
+                    self.state = result
+
+            pygame.display.flip()
+
+class Button:
+    def __init__(self, scale, rel_x, rel_y, image_path):
+        self.image_orig = util.load_image(image_path, scale)
+        self.rel_x = rel_x
+        self.rel_y = rel_y
+        self.rect = self.image_orig.get_rect()
+        self.clicked = False
+
+    def update(self, screen):
+        sw, sh = screen.get_size()
+        self.rect = self.image_orig.get_rect(center=(int(self.rel_x * sw), int(self.rel_y * sh)))
+        self.clicked = False
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            if pygame.mouse.get_pressed()[0]:
+                self.clicked = True
+
+    def render(self, screen):
+        screen.blit(self.image_orig, self.rect)
 
 class Level_sekect_menu:
     def __init__(self):
-        self.bg=util.load(f'{BASE_DIR}/images/icons_menu/background_select_level.jpg', 1.1)
-        self.bg.set_colorkey((255, 255, 255))
-        self.shift=0
-        
-        self.how_many_levels=2
-        self.color_start=[197, 20, 7]
-        self.color_end=[252, 40, 0]
-        self.color_digit_start=[255, 255, 255]
-        self.color_digit_end=[51, 255, 255]
-        self.color_digit=[255, 255, 255]
-        self.period=160
-        #self.timer=0
-        self.color=[197, 20, 7]
-        self.now_coctounie=True
-        self.clic=False
-        
-        self.digit_font=pygame.font.Font(None, 100)
-    def run(self, scrin, fps, next_level, start, run):
-        pygame.event.clear()
+        self.bg_orig = util.load_image(f'{BASE_DIR}/images/icons_menu/background_select_level.jpg', 1)
+        self.color = [197, 20, 7]
+        self.color_digit = [255, 255, 255]
+        self.increment = [0.34375, 0.125, -0.04375]
+        self.increment_digit = -1.275
+        self.now_counting = True
 
-        
-        while True:
-            fps.tick(80)
-            
-            
-            self.render(scrin, fps)
-            self.update(scrin, next_level, start, run, fps)
-            
-            self.clic=False
-            for asd in pygame.event.get():
-                if asd.type==pygame.QUIT:
-                    exit(0)
-                if asd.type==pygame.MOUSEBUTTONDOWN:
-                    self.clic=True
-            
-    def render(self, scrin, fps):
-        scrin.fill((255, 255, 255))
-        scrin.blit(self.bg, (self.shift, 0))
-        self.scrin_2=pygame.Surface((2050, 1025), (pygame.SRCALPHA))
-        self.scrin_2.fill((255, 255, 255, 0))
-        x=250
-        y=300 
-        #if self.timer<self.period:
-        if self.now_coctounie==True:
-            self.color[0]+=0.34375
-            self.color[1]+=0.125
-            self.color[2]+=-0.04375
-            self.color_digit[0]-=1.275
-            if self.color[0]>252:
-                self.now_coctounie=False
-            if self.color[1]>40:
-                self.now_coctounie=False
-            if self.color[2]<0:
-                self.now_coctounie=False
+    def handle(self, screen, events):
+        sw, sh = screen.get_size()
+        screen.fill((255, 255, 255))
+        bg = pygame.transform.scale(self.bg_orig, (sw, sh))
+        screen.blit(bg, (0, 0))
+
+        # анимация цветов
+        if self.now_counting:
+            self.color[0] += self.increment[0]
+            self.color[1] += self.increment[1]
+            self.color[2] += self.increment[2]
+            self.color_digit[0] += self.increment_digit
+            if self.color[0] >= 252 or self.color[1] >= 40 or self.color[2] <= 0:
+                self.now_counting = False
         else:
-            if self.now_coctounie==False:
-                self.color[0]-=0.34375
-                self.color[1]-=0.125
-                self.color[2]-=-0.04375
-                self.color_digit[0]+=1.175
-                if self.color[0]<197:
-                    self.now_coctounie=True
-                if self.color[1]<20:
-                    self.now_coctounie=True
-                if self.color[2]>7:
-                    self.now_coctounie=True
-        
-        self.now_level_digit=1
+            self.color[0] -= self.increment[0]
+            self.color[1] -= self.increment[1]
+            self.color[2] -= self.increment[2]
+            self.color_digit[0] -= self.increment_digit
+            if self.color[0] <= 197 or self.color[1] <= 20 or self.color[2] >= 7:
+                self.now_counting = True
 
-        for asd in range(3):
-            for awsd in range(5):
-                self.digit_img_now_level=self.digit_font.render(str(self.now_level_digit), True, (self.color_digit))
-                self.bbx_buttons=pygame.Rect(x-60, y-60, 120, 120)
-                if self.bbx_buttons.collidepoint(pygame.mouse.get_pos()):
-                    pygame.draw.circle(self.scrin_2, (192, 192, 192, 210), (x, y), 60)
+        cols, rows = 5, 3
+        margin_x, margin_y = sw * 0.1, sh * 0.2
+        spacing_x = (sw - 2 * margin_x) / (cols - 1)
+        spacing_y = (sh - 2 * margin_y) / (rows - 1)
+
+        level = 1
+        clicked_level = None
+        font_size = int(sh * 0.1)
+        font = pygame.font.Font(None, font_size)
+        mouse_pos = pygame.mouse.get_pos()
+
+        for row in range(rows):
+            for col in range(cols):
+                x = margin_x + col * spacing_x
+                y = margin_y + row * spacing_y
+                rect = pygame.Rect(x - 60, y - 60, 120, 120)
+
+                if rect.collidepoint(mouse_pos):
+                    color = (192, 192, 192)
+                    for event in events:
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            clicked_level = level
                 else:
-                    pygame.draw.circle(self.scrin_2, self.color, (x, y), 60)
+                    color = tuple(map(int, self.color))
 
-                
-                if self.now_level_digit>9:
-                    self.scrin_2.blit(self.digit_img_now_level, (x-40, y-30))
-                else:
-                    self.scrin_2.blit(self.digit_img_now_level, (x-20, y-30))
-                self.now_level_digit+=1
-                
-                x+=380
-                
-            y+=283.333333333333333333333333
-            x=250
-        scrin.blit(self.scrin_2, (0, 0))
-      
-        pygame.display.flip()
-    def update(self, scrin, next_level, start, run, fps ):
-        self.x=250
-        self.y=300
-    
-        for asd in range(3):
-            for awsd in range(5):
-                self.bbx_buttons=pygame.Rect(self.x-60, self.y-60, 120, 120)
-                pygame.draw.rect(scrin, (0, 0, 255), (self.x, self.y, 120, 120))
-                if self.bbx_buttons.collidepoint(pygame.mouse.get_pos())and self.clic==True:
-                    start_menu=Start_menu_map()
-                    start_menu.run(scrin, next_level, start, run, fps, self.run)
-                    
-                else:
-                    self.clic=False
-                
-                    
-                self.x+=380
-                
-            self.y+=283.333333333333333333333333
-            self.x=250
-                    
+                pygame.draw.circle(screen, color, (int(x), int(y)), 60)
+                digit_surf = font.render(str(level), True, tuple(map(int, self.color_digit)))
+                ds_rect = digit_surf.get_rect(center=(int(x), int(y)))
+                screen.blit(digit_surf, ds_rect)
 
-                
+                level += 1
 
-
-
-
-
+        return clicked_level
 
 class Start_menu_map:
-    def __init__(self ):
-        self.background_LeVel_menu=util.load(f'{BASE_DIR}/images/icons_menu/start_LeVel_menu.jpg', 1.3)
-        self.play_button_start_menu_map=Button(0.75, 1350, 425, f'{BASE_DIR}/images/icons_menu/play_button_start_menu1.png') 
-        self.play_button_start_menu_map_bbx=self.play_button_start_menu_map.bbx_button
-        self.home_button=Button(0.24, 1370, 600, f'{BASE_DIR}/images/icons_menu/home_button_to_play.png')
-        self.back_button_in_Start_menu_map_menu=Button(0.498, 1360, 280, f'{BASE_DIR}/images/icons_menu/back_button_in_Start_menu_map_menu.png')
-    def render(self, scrin):
-        scrin.blit(self.background_LeVel_menu, (508.85, 200))
-        
-    def run(self, scrin, next_level, start, run, fps, run_2):
-        pygame.event.clear()
-        
-        while True:
-            self.render(scrin)
-            self.play_button_start_menu_map.render(scrin)
-            self.back_button_in_Start_menu_map_menu.render(scrin)
-            self.home_button.render(scrin)
-            if self.play_button_start_menu_map_bbx.collidepoint(pygame.mouse.get_pos())and pygame.mouse.get_pressed()[0]==True:
-                next_level()
-                start()
-            self.back_button_in_Start_menu_map_menu_bbx=self.back_button_in_Start_menu_map_menu.bbx_button
-            self.home_button_bbx=self.home_button.bbx_button
-            if self.home_button_bbx.collidepoint(pygame.mouse.get_pos())and pygame.mouse.get_pressed()[0]==True:
-                run(scrin, fps, next_level, start, run)
-            if self.back_button_in_Start_menu_map_menu_bbx.collidepoint(pygame.mouse.get_pos())and pygame.mouse.get_pressed()[0]==True:
-                run_2( scrin, fps, next_level, start, run)
-            for asd in pygame.event.get():
-                if asd.type==pygame.QUIT:
-                    exit(0)
-            pygame.display.update()
+    def __init__(self):
+        self.bg_orig = util.load_image(f'{BASE_DIR}/images/icons_menu/start_LeVel_menu.jpg', 1)
+        self.play_button = Button(0.75, 0.75, 0.4, f'{BASE_DIR}/images/icons_menu/play_button_start_menu1.png')
+        self.home_button = Button(0.24, 0.75, 0.55, f'{BASE_DIR}/images/icons_menu/home_button_to_play.png')
+        self.back_button = Button(0.498, 0.75, 0.25, f'{BASE_DIR}/images/icons_menu/back_button_in_Start_menu_map_menu.png')
+
+    def handle(self, screen, events, level, next_level, start, run_fn):
+        sw, sh = screen.get_size()
+        screen.fill((255, 255, 255))
+
+        bg_w, bg_h = int(sw * 0.6), int(sh * 0.6)
+        bg = pygame.transform.scale(self.bg_orig, (bg_w, bg_h))
+        screen.blit(bg, ((sw - bg_w) // 2, (sh - bg_h) // 2))
+
+        self.play_button.update(screen)
+        self.play_button.render(screen)
+        self.home_button.update(screen)
+        self.home_button.render(screen)
+        self.back_button.update(screen)
+        self.back_button.render(screen)
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.play_button.clicked:
+                    next_level(level)
+                    start()
+                elif self.home_button.clicked:
+                    return STATE_MAIN_MENU
+                elif self.back_button.clicked:
+                    return STATE_LEVEL_SELECT
+
+        return None

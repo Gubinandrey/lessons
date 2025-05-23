@@ -9,9 +9,9 @@ import platform
 import math
 import coin
 import главное_меню
+import move_platform
 min_dist=2050
 pygame.mixer.init()
-
 if platform.system()=='Darwin':
     W =2050
     H =1050
@@ -22,7 +22,6 @@ else:
 
 level=3
 scrin=pygame.display.set_mode((W, H))
-
 mapic=map.Tile_map(scrin, 3)
 pula_music=pygame.mixer.Sound(f'{BASE_DIR}/sfx/выстрел.mp3')
 pula_music.set_volume(0.3)
@@ -39,11 +38,13 @@ shrink=0
 scrin_2=pygame.Surface((W, H), pygame.SRCALPHA)
 expand=0
 local={
-'zelia_double_jump':True
+'zelia_double_jump':False,
+'no_perezaradka':True
 
 }
 all={
-'zelia_double_jump':3
+'zelia_double_jump':3,
+'no_perezaradka':3
 
 
 }
@@ -58,6 +59,7 @@ class Player:
         self.pula_timer=30
         self.fire_timer=30
         self.xp=100
+        mapic.k=7
         self.many_pules=0
         self.дробовик_3000=util.load(f'{BASE_DIR}/images/дробовик_для_игры_обрезанный_3000.png', mapic.k/20, False)
         self.дробовик_3000_bbx=self.дробовик_3000.get_rect()
@@ -140,7 +142,7 @@ class Player:
         if self.xp<25:
             self.speed_x=8
         if self==player:
-
+        
             global zelia_double_jump
             for asd in zelia_double_jump:
                 if asd.colliderect(self.new_bbx):
@@ -259,7 +261,16 @@ class Player:
             if self.speed_y<0:
                 self.y=asd.bottom
             self.speed_y=0
-        
+        if self==player:
+            for asd in move_platforms:
+                if asd.rect().colliderect(player.new_bbx):
+                    if self.y<asd.y:
+                        self.y=asd.rect().top-self.r.height
+                        self.jumps=0
+                        self.speed_y=0
+                    else:
+                        self.y=asd.rect().bottom
+                        
     def collisionx(self):
         self.r=self.rect()
         self.solid_tiles=mapic.get_intersections(self.r)
@@ -294,36 +305,53 @@ class Player:
             if self.оружки[0]==self.now_оружка:
                 puler=Pula(self.rect().left-50, self.rect().centery, -30, 50)
                 if self==player:
-                    self.many_pules+=1
-                if self.many_pules>=3:
-                    self.pula_timer=30
+                    
+                    if local['no_perezaradka']==True:
+                        self.timer=0
+                    else:
+                        self.many_pules+=1
+                    if self.many_pules>=3:
+                        self.pula_timer=30
                 projectiles.append(puler) 
         else:
+
             if self.оружки[0]==self.now_оружка:
                 puler=Pula(self.rect().right+20, self.rect().centery, 30, 50)
-                if self==player:
-                    self.many_pules+=1
-                if self.many_pules>=3:
-                    self.pula_timer=30
+                
+                if local['no_perezaradka']==True:
+                    self.timer=0
+                else:                
+                    if self==player:
+                        self.many_pules+=1
+                    if self.many_pules>=3:
+                        self.pula_timer=30
                 projectiles.append(puler)
         self.y_p=self.rect().top
         if self.flip==True:
             if self.оружки[1]==self.now_оружка:
                 if self==player:
-                    self.many_pules+=3
-                if self.many_pules>=3:
-                    self.pula_timer=20
-                    self.pula_timer-=1
-                for asd in range(3):
-                    puler=Pula(self.rect().left-70, self.y_p, -30, 30)
-                    self.y_p+=40
-                    projectiles.append(puler)
+                   
+                    if local['no_perezaradka']==True:
+                        self.timer=0
+                    else:
+                        self.many_pules+=3
+                    if self.many_pules>=3:
+                        self.pula_timer=20
+                        self.pula_timer-=1
+                    for asd in range(3):
+                        puler=Pula(self.rect().left-70, self.y_p, -30, 30)
+                        self.y_p+=40
+                        projectiles.append(puler)
         if self.flip==False:
             if self==player:
-                self.many_pules+=3
-                if self.many_pules>=3:
-                    self.pula_timer=20
-                    self.pula_timer-=1
+                
+                if local['no_perezaradka']==True:
+                    self.timer=0
+                else:
+                    self.many_pules+=3
+                    if self.many_pules>=3:
+                        self.pula_timer=20
+                        self.pula_timer-=1
             if self.оружки[1]==self.now_оружка:
                 for asd in range(3):
                     puler=Pula(self.rect().right+70, self.y_p, 30, 30)
@@ -401,17 +429,28 @@ class Sparks:
         for asd in self.sparks:
             asd.render()
 player=Player(mapic.camera_x, mapic.camera_y, False)
+
 zelia_double_jump=[]
-def next_lexel():
-    global level
-    level+=1
-    global mapic
-    mapic=map.Tile_map(scrin, level)
+
+def next_lexel(lvl=None):
+    global level, mapic, expand, npss, coins, zelia_double_jump
+    if lvl is not None:
+        level = lvl
+    else:
+        level += 1
+    mapic = map.Tile_map(scrin, level)
     global expand
     expand=1000
     global npss, coins
     npss=[]
     coins=[]
+    global move_platforms
+
+    move_platforms=[]
+    
+    for asd in mapic.get_move_platforms():
+        m_p=move_platform.Move_platform(asd[0], asd[1], 5, 5, mapic.resource['popytki_plotform'][0])
+        move_platforms.append(m_p)
     global zelia_double_jump
     zelia_double_jump=[]
     for asd in mapic.get_zelia():
@@ -442,11 +481,12 @@ npss=[]
 for asd in mapic.get_nps():
     p=Player(asd[0], asd[1], True)
     npss.append(p)
-    
+
 def start():
     start_time=time.time()
     q=0
     while True:
+        
         q+=1
         end_time = time.time()
         if end_time-start_time>=1:
@@ -477,6 +517,9 @@ def start():
                 asd.update()
         player.update()
         player.render()
+        for asd in move_platforms:
+            asd.render(scrin, mapic.camera_x, mapic.camera_y)
+            asd.update()
         for asd in sparksssss:
             
             asd.update()
@@ -546,5 +589,5 @@ def start():
             expand-=20
             scrin.blit(scrin_2, (0, 0))
         pygame.display.update()
-start()
-#main_menu.run(scrin, fps, next_lexel, start, main_menu.run)
+
+main_menu.run(scrin, fps, next_lexel, start, main_menu.run)
