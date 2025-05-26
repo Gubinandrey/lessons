@@ -38,7 +38,7 @@ shrink=0
 scrin_2=pygame.Surface((W, H), pygame.SRCALPHA)
 expand=0
 local={
-'zelia_double_jump':False,
+'zelia_double_jump':True,
 'no_perezaradka':True
 
 }
@@ -289,7 +289,7 @@ class Player:
                 self.speed_y=-11
                 jump_music.play()
         if local['zelia_double_jump']==True:
-            if self.jumps>1:
+            if self.jumps>100 :
                 pass
             else:
                 self.jumps+=1

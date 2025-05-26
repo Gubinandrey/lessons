@@ -61,15 +61,19 @@ class Button:
         self.clicked = False
 
     def update(self, screen):
-        sw, sh = screen.get_size()
-        self.rect = self.image_orig.get_rect(center=(int(self.rel_x * sw), int(self.rel_y * sh)))
+        
         self.clicked = False
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if pygame.mouse.get_pressed()[0]:
                 self.clicked = True
 
     def render(self, screen):
+        sw, sh = screen.get_size()
+        self.rect = self.image_orig.get_rect(center=(int(self.rel_x * sw), int(self.rel_y * sh)))
         screen.blit(self.image_orig, self.rect)
+        #print(self.rect)
+
+
 
 class Level_sekect_menu:
     def __init__(self):
@@ -142,15 +146,18 @@ class Start_menu_map:
         self.play_button = Button(0.75, 0.75, 0.4, f'{BASE_DIR}/images/icons_menu/play_button_start_menu1.png')
         self.home_button = Button(0.24, 0.75, 0.55, f'{BASE_DIR}/images/icons_menu/home_button_to_play.png')
         self.back_button = Button(0.498, 0.75, 0.25, f'{BASE_DIR}/images/icons_menu/back_button_in_Start_menu_map_menu.png')
+        self.double_jump_zelia_start_menu_map=Button(0.5, 0.5, 0.72, '/Users/andrey/python/lessons/game/images/tiles/зелья/01:second_jump.png')
 
+        self.ramka=util.load_image('/Users/andrey/python/lessons/game/images/icons_menu/fон_от. _чат_джи_пи_ти.png', 0.15)
     def handle(self, screen, events, level, next_level, start, run_fn):
         sw, sh = screen.get_size()
         screen.fill((255, 255, 255))
 
-        bg_w, bg_h = int(sw * 0.6), int(sh * 0.6)
-        bg = pygame.transform.scale(self.bg_orig, (bg_w, bg_h))
-        screen.blit(bg, ((sw - bg_w) // 2, (sh - bg_h) // 2))
-
+        bg_w,g_h = int(sw * 0.6), int(sh * 0.6)
+        bg = pygame.transform.scale(self.bg_orig, (bg_w, g_h))
+        screen.blit(bg, ((sw - bg_w) // 2, (sh - g_h) // 2))
+        screen.blit(self.ramka, ( 950, 680))
+        self.double_jump_zelia_start_menu_map.render(screen)
         self.play_button.update(screen)
         self.play_button.render(screen)
         self.home_button.update(screen)
