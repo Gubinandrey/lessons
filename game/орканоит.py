@@ -2,8 +2,8 @@ import pygame
 import random
 pygame.init()
 scrin=pygame.display.set_mode((1000, 600))
- music1=pygame.mixer.Sound('game/defeat.mp3')
- music2=pygame.mixer.Sound('game/win.mp3')
+music1=pygame.mixer.Sound('defeat.mp3')
+music2=pygame.mixer.Sound('win.mp3')
 max_circle_speed=3
 
 

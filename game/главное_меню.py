@@ -147,7 +147,7 @@ class Start_menu_map:
         self.home_button = Button(0.24, 0.75, 0.55, f'{BASE_DIR}/images/icons_menu/home_button_to_play.png')
         self.back_button = Button(0.498, 0.75, 0.25, f'{BASE_DIR}/images/icons_menu/back_button_in_Start_menu_map_menu.png')
         self.double_jump_zelia_start_menu_map=Button(0.5, 0.5, 0.72, '/Users/andrey/python/lessons/game/images/tiles/зелья/01:second_jump.png')
-
+        self.no_perezaradka_zelia=Button(0.5, 0.38, 0.72, '/Users/andrey/python/lessons/game/images/tiles/зелья/02:no_perezaradka.png')
         self.ramka=util.load_image('/Users/andrey/python/lessons/game/images/icons_menu/fон_от. _чат_джи_пи_ти.png', 0.15)
     def handle(self, screen, events, level, next_level, start, run_fn):
         sw, sh = screen.get_size()
@@ -157,6 +157,10 @@ class Start_menu_map:
         bg = pygame.transform.scale(self.bg_orig, (bg_w, g_h))
         screen.blit(bg, ((sw - bg_w) // 2, (sh - g_h) // 2))
         screen.blit(self.ramka, ( 950, 680))
+        screen.blit(self.ramka, ( 700, 680))
+        screen.blit(self.ramka, ( 1200, 680))
+
+        self.no_perezaradka_zelia.render(screen)
         self.double_jump_zelia_start_menu_map.render(screen)
         self.play_button.update(screen)
         self.play_button.render(screen)
